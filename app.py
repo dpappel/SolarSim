@@ -1,6 +1,8 @@
-# --------------------------------------------------------
-# Solar Farm Financial Model App
-# --------------------------------------------------------
+# ----------------------------------------------------------------------------
+# © 2025 Dimitris Pappelis, ECOWAY GmbH
+# Eichzöpfen Solar Park Financial Model
+# ----------------------------------------------------------------------------
+
 import streamlit as st
 import pandas as pd
 import numpy as np
