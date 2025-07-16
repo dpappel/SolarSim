@@ -56,6 +56,8 @@ tax_rate      = float(st.sidebar.text_input("Tax rate (%)", "0")) / 100
 
 st.sidebar.header("7. Model Assumptions")
 horizon = st.sidebar.number_input("Projection horizon (years)", min_value=1, value=20, step=1)
+# Lease term input, placed just after projection horizon
+lease_term = st.sidebar.number_input("Total lease term (years)", min_value=1, value=40, step=1)
 depr_period = st.sidebar.number_input("Depreciation period (years)", min_value=1, value=40, step=1)
 degrade_rate = st.sidebar.number_input("Annual degradation (%)", min_value=0.0, value=0.0, step=0.1) / 100
 cost_of_equity = st.sidebar.number_input(
@@ -436,6 +438,20 @@ def create_pdf():
     possible_result_15ct = yield_per_year_aug * horizon
     possible_overall_15ct = yield_per_year_aug * horizon
 
+    # ---- Additional calculations for remaining lease term ----
+    remaining_years = lease_term - horizon
+    result_runtime_eeg = yield_per_year_eeg * horizon
+    if remaining_years > 0:
+        result_remaining_eeg = yield_per_year_eeg * remaining_years
+        overall_result_eeg = result_runtime_eeg + result_remaining_eeg
+        result_remaining_aug = yield_per_year_aug * remaining_years
+        overall_result_aug = possible_result_15ct + result_remaining_aug
+    else:
+        result_remaining_eeg = 0
+        overall_result_eeg = result_runtime_eeg
+        result_remaining_aug = 0
+        overall_result_aug = possible_result_15ct
+
     pdf.add_page()  # new page before Summary Template
     # Summary Template
     rows += [
@@ -453,10 +469,13 @@ def create_pdf():
         ("Insurance", f"{ins_cost * total_capacity:,.2f} EUR"),
         ("Total yield per year EEG", f"{yield_per_year_eeg:,.2f} EUR"),
         ("Total yield per year Augmented", f"{yield_per_year_aug:,.2f} EUR"),
-        ("Possible result in EEG runtime", f"{cumulative[-1]:,.2f} EUR"),
-        ("Possible overall result over lease term", f"{cumulative[-1]:,.2f} EUR"),
-        ("Possible result in EEG Augmented runtime", f"{possible_result_15ct:,.2f} EUR"),
-        ("Possible overall result with EEG Augmented", f"{possible_overall_15ct:,.2f} EUR"),
+        # --- Updated and expanded rows for possible results over lease term ---
+        ("Result in EEG runtime", f"{result_runtime_eeg:,.2f} EUR"),
+        ("Result in remaining term EEG", f"{result_remaining_eeg:,.2f} EUR"),
+        ("Overall result over lease term EEG (no deg)", f"{overall_result_eeg:,.2f} EUR"),
+        ("Result in EEG Augmented runtime", f"{possible_result_15ct:,.2f} EUR"),
+        ("Result in remaining term EEG Augmented", f"{result_remaining_aug:,.2f} EUR"),
+        ("Overall result with EEG Augmented (no deg)", f"{overall_result_aug:,.2f} EUR"),
         ("Gross profit with EEG remuneration (%)", f"{(gross_profit_eeg / capex_total * 100):.2f} %"),
         ("Gross yield EEG Augmented (%)", f"{(gross_yield_15ct / capex_total * 100):.2f} %"),
         # --- Insert IRR for EEG and EEG Augmented scenarios ---
