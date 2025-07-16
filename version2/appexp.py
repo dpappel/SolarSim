@@ -496,6 +496,6 @@ def create_pdf():
             pdf.cell(col2_width, line_height, value, ln=True, border=0)
     return bytes(pdf.output(dest='S').encode('latin1', errors='replace'))
 
-st.subheader("Download PDF Summary (Offline Mode)")
+st.subheader("Offline Mode Analysis")
 pdf_bytes = create_pdf()
 st.download_button("📄 Download Summary as PDF", data=pdf_bytes, file_name="solar_summary.pdf", mime="application/pdf")
